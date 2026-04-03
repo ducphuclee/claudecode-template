@@ -1,0 +1,97 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(echo *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(rm *)",
+      "Bash(which *)",
+      "Bash(pwd)",
+      "Bash(whoami)"
+    ],
+    "deny": [
+      "Bash(curl * | bash *)",
+      "Bash(wget * | bash *)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Check if .project-manager/status.md exists in the current project directory. If it exists, read it. Also read .project-manager/sessions/latest.md if it exists. Return a systemMessage with a concise 2-3 line project status summary so the user immediately knows where the project stands. If neither file exists, return an empty systemMessage.",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Review the last assistant message. Were all explicitly requested tasks completed? If there are clearly unfinished items that were directly asked for, set decision=continue and specify what remains. Otherwise set decision=approve.",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'PreToolUse:Bash hook additional context: Use parallel execution for independent tasks. Use run_in_background for long operations (npm install, builds, tests).'"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'PreToolUse:Write hook additional context: Verify changes work after editing. Test functionality before marking complete.'"
+          }
+        ]
+      },
+      {
+        "matcher": "Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'PreToolUse:Glob hook additional context: Combine searches in parallel when investigating multiple patterns.'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'PostToolUse:Write hook additional context: File written. Test the changes to ensure they work correctly.'"
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-6",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5-20251001",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4-6",
+    "API_TIMEOUT_MS": "300000"
+  },
+  "enabledMcpjsonFiles": [".mcp.json"]
+}
